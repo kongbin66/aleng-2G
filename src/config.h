@@ -240,6 +240,13 @@ RTC_DATA_ATTR int timeLastNTP_Y, timeLastNTP_M, timeLastNTP_D, timeLastNTP_h, ti
 /*-------------------------------SPIFFS定义-------------------------------------*/
 RTC_DATA_ATTR bool alFFS_thisRec_firstData_flag; //本次记录第一次上传
 RTC_DATA_ATTR char nowREC_filepath[21];          //记录文件的路径
+uint32_t lose_count=0;//漏发文件现在信息条数
+bool lose_first_flag=0;//漏发文件第一次标志
+char work_data[512];//漏发暂存数组
+int work_data_num =0;//漏发工作表数据指针
+
+
+
 /*-------------------------------系统时间定义-------------------------------------*/
 RTC_DATA_ATTR uint32_t now_unixtime;//现在系统时间
 
@@ -336,13 +343,13 @@ void waking_update_time();
 void SET_SLEEPTIME(time_t t);
 
 bool firstBootFlag; //第一次启动标志位
-bool list_first_flag=0;//
-bool lose_first_flag=0;
-bool f_Flight_Mode=0;
+bool list_first_flag=0;//记录文件第一次标志
+
+bool f_Flight_Mode=0;//飞行模式
 bool f_lose=0; 
 bool old_workingstate = 0;
 
-uint32_t lose_count=0;
+
 String losestr1;
 uint32_t f_send_ok=0;//漏发上传成功条数
 #endif // CONFIG_H

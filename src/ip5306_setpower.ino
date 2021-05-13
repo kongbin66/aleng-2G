@@ -19,7 +19,7 @@ static bool setPowerBoostKeepOn(bool en)
   return (Wire.endTransmission() == 0);
 }
 //实验开关电压保持
-void tstt(bool x)
+void test_power(bool x)
 {
    bool i= setPowerBoostKeepOn(x);
    Serial.println(String("IP5306 setPowerBoostKeepOn: ") + (i ? "OK" : "FAIL"));

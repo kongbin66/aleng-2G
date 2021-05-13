@@ -2,13 +2,13 @@
 
 
 int rollback = 0;
+//调试开关
 void set_dbug(uint8_t a)
 {
     dbug=a;
 }
-/////////////////////////////////////////////////////////////
-//设置休眠时间：（S）
-/////////////////////////////////////////////////////////////
+
+//设置GSM发送间隔：（S）
 void SET_SLEEPTIME(time_t t)
 {
   sleeptime = t;
@@ -16,9 +16,8 @@ void SET_SLEEPTIME(time_t t)
   sleeptime = (time_t)EEPROM.readLong(2);
   Serial.printf("sleeptime:%ld\r\n", sleeptime);
 }
-////////////////////////////////////////////////////////////
+
 //设置亮屏时间和息屏到休眠时间
-////////////////////////////////////////////////////////////
 void SET_Last_span_Sleep_span(int x, int y)
 {
   screen_On_last_span = x;
@@ -29,12 +28,19 @@ void SET_Last_span_Sleep_span(int x, int y)
   screen_Off_to_sleep_span = (time_t)EEPROM.readInt(47);
   Serial.printf("screen_Off_to_sleep_span:%ld\r\n", screen_Off_to_sleep_span);
 }
-void test1(char a, char b, char c)
+//设定飞航模式 1飞航 2工作
+void set_fxmode(char a, char b, char c)
 {
   f_Flight_Mode = a;
   workingState = b;
   dbug = c;
 }
+//读LIST文件系统
+void read_list()
+{
+   alFFS_readlist();
+}
+
 //文件系统使用情况
 void spiffs_size()
 {
@@ -455,6 +461,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
 
 
 /******************************************************************************
+ * 准备弃用
 *******************************************************************************/
 void jiexi_lose(bool a)
 {
@@ -623,11 +630,5 @@ void jiexi_lose(bool a)
 //   }
 // }
 
-
-void read_list()
-{
-   alFFS_readlist();
-  
-}
 
 
