@@ -1,0 +1,2 @@
+n=inputbox（“请您输入要转换成ASCII码的文本：”）
+msgbox n & "的ASCII码为" & asc(n)
