@@ -1,11 +1,10 @@
 #include "config.h"
 
-
 int rollback = 0;
 //调试开关
 void set_dbug(uint8_t a)
 {
-    dbug=a;
+  dbug = a;
 }
 
 //设置GSM发送间隔：（S）
@@ -38,35 +37,34 @@ void set_fxmode(char a, char b, char c)
 //读LIST文件系统
 void read_list()
 {
-   alFFS_readlist();
+  alFFS_readlist();
 }
 
 //文件系统使用情况
 void spiffs_size()
 {
-   Serial.printf("FFS SIZE:%d\n",SPIFFS.totalBytes()); 
-   Serial.printf("FFS USE SIZE:%d\n",SPIFFS.usedBytes()); 
+  Serial.printf("FFS SIZE:%d\n", SPIFFS.totalBytes());
+  Serial.printf("FFS USE SIZE:%d\n", SPIFFS.usedBytes());
 }
 //格式化文件系统
 void FFS_fromat()
-{  
-   bool i= SPIFFS.format();
-   if(!i)Serial.printf("FFS_fromat is fail!\n");
-   else Serial.printf("FFS_fromat ok!\n");
+{
+  bool i = SPIFFS.format();
+  if (!i)
+    Serial.printf("FFS_fromat is fail!\n");
+  else
+    Serial.printf("FFS_fromat ok!\n");
 }
 //核对系统时间
 void sys_time()
 {
-   screen_loopEnabled = false;
-   setupModem();
-   modemToGPRS();
-   if(getLBSLocation()) Serial.println("sys_time ok!\n");
-   screen_loopEnabled = true;
+  screen_loopEnabled = false;
+  setupModem();
+  modemToGPRS();
+  if (getLBSLocation())
+    Serial.println("sys_time ok!\n");
+  screen_loopEnabled = true;
 }
-
-
-
-
 
 /**************************************************************
 //第二核创建按键任务
@@ -117,7 +115,6 @@ void xieyi_Task(void *parameter)
   vTaskDelete(NULL);
 }
 
-
 /*****************************************************************************************************************/
 void setup()
 {
@@ -127,8 +124,8 @@ void setup()
   hardware_init(); //硬件初始化
   software_init(); //软件初始化
 
-  xTaskCreatePinnedToCore(xieyi_Task, "xieyi_Task", 3000, NULL, 2, &xieyi_task,tskNO_AFFINITY); //创建DS1302任务
-  xTaskCreatePinnedToCore(ds1302_task, "ds1302_task", 2000, NULL, 2, &ds_task,tskNO_AFFINITY);  //创建DS1302任务
+  xTaskCreatePinnedToCore(xieyi_Task, "xieyi_Task", 3000, NULL, 2, &xieyi_task, tskNO_AFFINITY); //创建DS1302任务
+  xTaskCreatePinnedToCore(ds1302_task, "ds1302_task", 2000, NULL, 2, &ds_task, tskNO_AFFINITY);  //创建DS1302任务
   xTaskCreatePinnedToCore(codeForTask1, "task1", 1000, NULL, 2, &task1, tskNO_AFFINITY);
   if (rollback)
   {
@@ -163,14 +160,15 @@ void setup()
   }
 }
 /******************************************************************************************************************/
- uint16_t ii;
+uint16_t ii;
 void loop()
 {
- 
-  ii++;
-  if(ii%10==0)digitalWrite(33,LOW); 
-  if(ii%5==0)digitalWrite(33,HIGH);
 
+  ii++;
+  if (ii % 10 == 0)
+    digitalWrite(33, LOW);
+  if (ii % 5 == 0)
+    digitalWrite(33, HIGH);
 
   if (oledState == OLED_ON)
   {
@@ -182,9 +180,7 @@ void loop()
     send_Msg_var_GSM_while_OLED_on(1);
   }
   oled_on_off_switch();
-
 }
-
 
 /******************************************************************************
 *******************************************************************************/
@@ -237,7 +233,7 @@ bool sendTempAndHumi2()
 /*****************************************************************************************
  *                            //发送数据
 ******************************************************************************************/
-//#define D1 
+//#define D1
 void send_Msg_var_GSM_while_OLED_on(bool a)
 {
   //Serial.printf("goto send_Msg_var_GSM_while_OLED_on(bool a)\n");
@@ -246,12 +242,14 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
 
   if (workingState == WORKING && f_Flight_Mode == false) //工作模式和飞行模式关闭（正常记录）
   {
-    if(dbug)Serial.println("zhengchang jilu! ");
+    if (dbug)
+      Serial.println("zhengchang jilu! ");
     now_rec_stamp = unixtime(); //读现在时间
-    #if D1 
-    Serial.printf("sleeptime:%d - (now_rec_stamp:%d - last_rec_stamp:%d)\n",sleeptime,now_rec_stamp,last_rec_stamp);
-    #endif
-    if(dbug) Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
+#if D1
+    Serial.printf("sleeptime:%d - (now_rec_stamp:%d - last_rec_stamp:%d)\n", sleeptime, now_rec_stamp, last_rec_stamp);
+#endif
+    if (dbug)
+      Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
     if (now_rec_stamp - last_rec_stamp >= sleeptime) //记录间隔到了吗？
     {
       Serial.printf("zhengchang mode time Ok!\n ");
@@ -287,7 +285,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
         Serial.println("zhengchang mode wangluo  OK!");
         sht20getTempAndHumi();
         alFFS_savelist();
-        
+
         Serial.printf("1*******************************************************1");
         //检查有漏发文件和飞行模式标志吗
         if (f_Flight_Mode == true && f_lose == true) //正在飞行模式中//这种状态可能进不来
@@ -327,14 +325,13 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
                 display.setTextAlignment(TEXT_ALIGN_LEFT);
               }
               key_init();
-              Serial.printf("time jiange:%d\n",(unixtime()-last_rec_stamp));
-              last_rec_stamp = unixtime();//发送完成可以记录发送时间
+              Serial.printf("time jiange:%d\n", (unixtime() - last_rec_stamp));
+              last_rec_stamp = unixtime(); //发送完成可以记录发送时间
               //screen_loopEnabled = true;
               screen_On_Start = sys_sec;
               screen_On_now = sys_sec;
               digitalWrite(MODEM_POWER_ON, LOW);
               //1.记录正常文件
-            
             }
             else
             {
@@ -342,11 +339,11 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
 
               //1.直接写漏发文件和正常记录文件
               alFFS_savelose();
-              f_lose=true;
+              f_lose = true;
               //置位标志位
               key_init();
-              last_rec_stamp = unixtime();//发送失败也要更新发送时间，开启下一次发送
-             // screen_loopEnabled = true;
+              last_rec_stamp = unixtime(); //发送失败也要更新发送时间，开启下一次发送
+                                           // screen_loopEnabled = true;
               screen_On_Start = sys_sec;
               screen_On_now = sys_sec;
               digitalWrite(MODEM_POWER_ON, LOW);
@@ -357,11 +354,11 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
             Serial.printf("onenet_connect fial!\n"); //这里应加入F_LOSE=1?
             //1.直接写漏发文件
             alFFS_savelose();
-            f_lose=true;
+            f_lose = true;
             //置位标志位
             key_init();
-            last_rec_stamp = unixtime();//这里是联网不成功退出，要更新发送时间
-           // screen_loopEnabled = true;
+            last_rec_stamp = unixtime(); //这里是联网不成功退出，要更新发送时间
+                                         // screen_loopEnabled = true;
             screen_On_Start = sys_sec;
             screen_On_now = sys_sec;
             digitalWrite(MODEM_POWER_ON, LOW);
@@ -373,7 +370,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
             Serial.printf("fei feixingmoshi youloufa \n");
           //将本条加入到LOSE
           alFFS_savelose();
-          f_lose=true;
+          f_lose = true;
           screen_loopEnabled = false;
           jiexi_lose(a);
           //补发本条
@@ -399,45 +396,47 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
         //1.直接写漏发文件和正常记录文件
         alFFS_savelose();
         alFFS_savelist();
-      
+
         Serial.printf("2*******************************************************2");
         //置位标志位
         f_lose = true;
         key_init();
-        last_rec_stamp = unixtime();//有更新
-       // screen_loopEnabled = true;
+        last_rec_stamp = unixtime(); //有更新
+                                     // screen_loopEnabled = true;
         screen_On_Start = sys_sec;
         screen_On_now = sys_sec;
         digitalWrite(MODEM_POWER_ON, LOW);
       }
     }
-    else
-      if(dbug)Serial.printf("zhengchang mode time no!\n"); //发送时间未到。
+    else if (dbug)
+      Serial.printf("zhengchang mode time no!\n"); //发送时间未到。
   }
   else if (workingState == WORKING && f_Flight_Mode == true) //工作模式和飞行模式开启（不上传网络）
   {
-    if (dbug)Serial.println("jilu no send");
+    if (dbug)
+      Serial.println("jilu no send");
     now_rec_stamp = unixtime(); //读现在时间
-   #if D1 
-   Serial.printf("sleeptime:%d - (now_rec_stamp:%d - last_rec_stamp:%d)\n",sleeptime,now_rec_stamp,last_rec_stamp);
-   #endif
-    if(dbug)Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
+#if D1
+    Serial.printf("sleeptime:%d - (now_rec_stamp:%d - last_rec_stamp:%d)\n", sleeptime, now_rec_stamp, last_rec_stamp);
+#endif
+    if (dbug)
+      Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
     if ((now_rec_stamp - last_rec_stamp >= sleeptime)) //记录间隔到了吗？
     {
       //1.直接写漏发文件和正常记录文件
-      
+
       alFFS_savelist();
       Serial.println("*************************3******************************");
-      
+
       alFFS_savelose();
-      
+
       //置位标志位
       f_lose = true;
       f_Flight_Mode = true;
 
       key_init();
-      last_rec_stamp = unixtime();//间隔到了，不上传也要更新，方便开启下一次
-     // screen_loopEnabled = true;
+      last_rec_stamp = unixtime(); //间隔到了，不上传也要更新，方便开启下一次
+                                   // screen_loopEnabled = true;
       screen_On_Start = sys_sec;
       screen_On_now = sys_sec;
     }
@@ -458,24 +457,23 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
   }
 }
 
-
-
 /******************************************************************************
  * 准备弃用
 *******************************************************************************/
 void jiexi_lose(bool a)
 {
-    
-  if (lose_count != 0){
+  Serial.println("have lose");
+  if (lose_count != 0)
+  {
     //Serial.printf("lose_count:%d\n", lose_count);
-    Serial.println("have lose");
-    get_ffs_lose_data(SPIFFS, "/lose.hex", f_send_ok,&currentTemp,&currentHumi, &now_unixtime);
-    Serial.println(currentTemp);
-    Serial.println(currentHumi);
-    Serial.println(now_unixtime);
-    while(!(lose_count==f_send_ok))
+
+    while (!(lose_count == f_send_ok))
     {
-       onenet_connect();
+      get_ffs_lose_data(SPIFFS, "/lose.hex", f_send_ok, &currentTemp, &currentHumi, &now_unixtime);
+      Serial.println(currentTemp);
+      Serial.println(currentHumi);
+      Serial.println(now_unixtime);
+      onenet_connect();
       if (client.connected())
       {
         char subscribeTopic[75];                           //订阅主题
@@ -494,8 +492,7 @@ void jiexi_lose(bool a)
         return;
       }
     }
-    
-    
+
     if (a)
     {
       display.drawProgressBar(5, 50, 118, 8, 100);
@@ -506,34 +503,33 @@ void jiexi_lose(bool a)
 
     //补发完毕
     //请漏发文件
-    if((f_send_ok)==lose_count)
+    if ((f_send_ok) == lose_count)
     {
-      deleteFile(SPIFFS , "/lose.hex");
+      deleteFile(SPIFFS, "/lose.hex");
       lose_first_flag = true;
       lose_count = 0;
       f_send_ok = 0;
       f_lose = false;
-      if (!old_workingstate) workingState = NOT_WORKING;
+      if (!old_workingstate)
+        workingState = NOT_WORKING;
       old_workingstate = 0;
       screen_loopEnabled = true;
-      
     }
-    
   }
-
 }
 void jiexi_lose2(bool a)
 {
 
-  if (lose_count != 0){
+  if (lose_count != 0)
+  {
     //Serial.printf("lose_count:%d\n", lose_count);
     Serial.println("have lose");
     alFFS_readlose();
     uint32_t i = losestr1.length();
-    Serial.printf("memory:%d\n",i);
+    Serial.printf("memory:%d\n", i);
     //DynamicJsonDocument doc(i * lose_count + 100);
 
-    DynamicJsonDocument doc(losestr1.length()+ 100);
+    DynamicJsonDocument doc(losestr1.length() + 100);
     DeserializationError error = deserializeJson(doc, losestr1);
     if (error)
     {
@@ -595,7 +591,8 @@ void jiexi_lose2(bool a)
     lose_count = 0;
     f_send_ok = 0;
     f_lose = false;
-    if (!old_workingstate) workingState = NOT_WORKING;
+    if (!old_workingstate)
+      workingState = NOT_WORKING;
     old_workingstate = 0;
   }
   else
@@ -687,6 +684,3 @@ void jiexi_lose2(bool a)
 //     Serial.println("not lose");
 //   }
 // }
-
-
-
