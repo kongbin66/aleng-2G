@@ -13,6 +13,6 @@ void sht20getTempAndHumi()
     currentTemp = _currentTemp;
     currentHumi = _currentHumi;
     tempAndHumi_Ready = true;
-    //postMsgId++;
+   
   }
 }

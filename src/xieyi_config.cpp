@@ -8,13 +8,16 @@ void read_list();
 void jiexi_lose(bool);
 void set_dbug(uint8_t a);
 void test_power(bool x);
-void test( int dat);
+void read_lose();
 void spiffs_size();
 void FFS_fromat();
 void alFFS_savelist();
 void sys_time();
 void lose_tiancong();
 void my_listDir(bool x);
+void get_lose_data(int);
+
+void test(int);
 //2.填写指令参数格式
   NAME_TAB name_tab[]=
  {
@@ -25,13 +28,15 @@ void my_listDir(bool x);
 	  (void*)jiexi_lose,                                      {0xaa,0x04, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
       (void*)set_dbug,                                        {0xaa,0xdb, 1, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)test_power,                                      {0xaa,0x05, 1, 0, 0, 0, 0, 0,0,0, 0xbb},
-	  (void*)test,                                            {0xaa,0x06, 1, 0, 0, 0, 0, 0,0,0, 0xbb},
+	  (void*)read_lose,                                       {0xaa,0x06, 1, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)spiffs_size,                                     {0xaa,0x07, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)FFS_fromat,                                      {0xaa,0x08, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)alFFS_savelist,                                  {0xaa,0x09, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)sys_time,                                        {0xaa,0x0a, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)lose_tiancong,                                   {0xaa,0x0b, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)my_listDir,                                      {0xaa,0x0c, 1, 0, 0, 0, 0, 0,0,0, 0xbb},
+	  (void*)get_lose_data,                                   {0xaa,0x0d, 1, 1, 0, 0, 0, 0,0,0, 0xbb},
+	  (void*)test,                                            {0xaa,0xff, 1, 1, 0, 0, 0, 0,0,0, 0xbb},
  };
 //3.根据函数表修改xieyi.h的tab
 //4.在主程序中调用xieyi_scan();

@@ -251,7 +251,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
     #if D1 
     Serial.printf("sleeptime:%d - (now_rec_stamp:%d - last_rec_stamp:%d)\n",sleeptime,now_rec_stamp,last_rec_stamp);
     #endif
-    Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
+    if(dbug) Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
     if (now_rec_stamp - last_rec_stamp >= sleeptime) //记录间隔到了吗？
     {
       Serial.printf("zhengchang mode time Ok!\n ");
@@ -287,7 +287,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
         Serial.println("zhengchang mode wangluo  OK!");
         sht20getTempAndHumi();
         alFFS_savelist();
-        postMsgId++;
+        
         Serial.printf("1*******************************************************1");
         //检查有漏发文件和飞行模式标志吗
         if (f_Flight_Mode == true && f_lose == true) //正在飞行模式中//这种状态可能进不来
@@ -374,6 +374,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
           //将本条加入到LOSE
           alFFS_savelose();
           f_lose=true;
+          screen_loopEnabled = false;
           jiexi_lose(a);
           //补发本条
           key_init();
@@ -394,11 +395,11 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
       }
       else
       {
-        Serial.printf("zhengchang mode wangluo  eer！\n ");
+        Serial.printf("zhengchang mode wangluo error!\n");
         //1.直接写漏发文件和正常记录文件
         alFFS_savelose();
         alFFS_savelist();
-        postMsgId++;
+      
         Serial.printf("2*******************************************************2");
         //置位标志位
         f_lose = true;
@@ -420,16 +421,16 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
    #if D1 
    Serial.printf("sleeptime:%d - (now_rec_stamp:%d - last_rec_stamp:%d)\n",sleeptime,now_rec_stamp,last_rec_stamp);
    #endif
-    Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
+    if(dbug)Serial.println("GSM transmission will start at:" + (String)(sleeptime - (now_rec_stamp - last_rec_stamp)));
     if ((now_rec_stamp - last_rec_stamp >= sleeptime)) //记录间隔到了吗？
     {
       //1.直接写漏发文件和正常记录文件
       
       alFFS_savelist();
-      Serial.printf("3*******************************************************3");
-      postMsgId++;
+      Serial.println("*************************3******************************");
+      
       alFFS_savelose();
-
+      
       //置位标志位
       f_lose = true;
       f_Flight_Mode = true;
@@ -440,8 +441,7 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
       screen_On_Start = sys_sec;
       screen_On_now = sys_sec;
     }
-    else if (dbug)
-      Serial.println("feixing mode timer no");
+    //else  Serial.println("feixing mode timer no");
   }
   else if ((workingState == NOT_WORKING) && (f_lose == true) && (f_Flight_Mode == false)) //发现有漏传文件，开启自动上传漏发工作模式
   {
@@ -464,6 +464,65 @@ void send_Msg_var_GSM_while_OLED_on(bool a)
  * 准备弃用
 *******************************************************************************/
 void jiexi_lose(bool a)
+{
+    
+  if (lose_count != 0){
+    //Serial.printf("lose_count:%d\n", lose_count);
+    Serial.println("have lose");
+    get_ffs_lose_data(SPIFFS, "/lose.hex", f_send_ok,&currentTemp,&currentHumi, &now_unixtime);
+    Serial.println(currentTemp);
+    Serial.println(currentHumi);
+    Serial.println(now_unixtime);
+    while(!(lose_count==f_send_ok))
+    {
+       onenet_connect();
+      if (client.connected())
+      {
+        char subscribeTopic[75];                           //订阅主题
+        char topicTemplate[] = "$sys/%s/%s/cmd/request/#"; //信息模板
+        snprintf(subscribeTopic, sizeof(subscribeTopic), topicTemplate, mqtt_pubid, mqtt_devid);
+        client.subscribe(subscribeTopic); //订阅命令下发主题
+        sendTempAndHumi2();
+        f_send_ok++;
+        Serial.printf("lose_count:%d\n", lose_count);
+        Serial.printf("f_send_ok:%d\n", f_send_ok);
+      }
+      else
+      {
+        f_lose = 1;
+        screen_loopEnabled = true;
+        return;
+      }
+    }
+    
+    
+    if (a)
+    {
+      display.drawProgressBar(5, 50, 118, 8, 100);
+      display.display();
+      delay(200);
+      display.setTextAlignment(TEXT_ALIGN_LEFT);
+    }
+
+    //补发完毕
+    //请漏发文件
+    if((f_send_ok)==lose_count)
+    {
+      deleteFile(SPIFFS , "/lose.hex");
+      lose_first_flag = true;
+      lose_count = 0;
+      f_send_ok = 0;
+      f_lose = false;
+      if (!old_workingstate) workingState = NOT_WORKING;
+      old_workingstate = 0;
+      screen_loopEnabled = true;
+      
+    }
+    
+  }
+
+}
+void jiexi_lose2(bool a)
 {
 
   if (lose_count != 0){
@@ -544,7 +603,6 @@ void jiexi_lose(bool a)
     Serial.println("not lose");
   }
 }
-
 // /******************************************************************************
 // *******************************************************************************/
 // void jiexi_lose(bool a)

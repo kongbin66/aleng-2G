@@ -237,13 +237,20 @@ RTC_DATA_ATTR int postMsgId = 0;                     //记录已经post了多少
 RTC_DATA_ATTR float locationE, locationN, locationA; //地理位置,经度纬度
 RTC_DATA_ATTR int timeNow_Y, timeNow_M, timeNow_D, timeNow_h, timeNow_m, timeNow_s;
 RTC_DATA_ATTR int timeLastNTP_Y, timeLastNTP_M, timeLastNTP_D, timeLastNTP_h, timeLastNTP_m, timeLastNTP_s;
+
+
+
+
 /*-------------------------------SPIFFS定义-------------------------------------*/
 RTC_DATA_ATTR bool alFFS_thisRec_firstData_flag; //本次记录第一次上传
 RTC_DATA_ATTR char nowREC_filepath[21];          //记录文件的路径
-uint32_t lose_count=0;//漏发文件现在信息条数
+uint32_t lose_count = 0;//漏发文件现在信息条数
 bool lose_first_flag=0;//漏发文件第一次标志
 char work_data[512];//漏发暂存数组
 int work_data_num =0;//漏发工作表数据指针
+void get_data(fs::FS &fs, const char *path, uint32_t x,float* a,float *b, uint32_t *c);
+void get_ffs_lose_data(fs::FS &fs, const char *path, uint32_t x,float* a,float *b, uint32_t *c);
+void deleteFile(fs::FS &fs, const char * path);
 
 
 
@@ -351,5 +358,5 @@ bool old_workingstate = 0;
 
 
 String losestr1;
-uint32_t f_send_ok=0;//漏发上传成功条数
+uint32_t f_send_ok=1;//漏发上传成功条数
 #endif // CONFIG_H

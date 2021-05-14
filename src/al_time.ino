@@ -9,7 +9,7 @@ void wakeup_init_time()
   //判断唤醒源
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 && workingState == WORKING)
   {
-    
+    Serial.println("pppppppppppppppppppppppppppppppppppppppppp");
   }
 }
 

@@ -122,6 +122,7 @@ void alFFS_readlist()
 //josn保存到LIST文件，判断第一次写标志
 void alFFS_savelist()
 {
+  Serial.printf("start save list ...\n");
   //1.读取温湿度，和当前时间。
   char tempStr[18];
   char tempStrtemplate[] = "%d%02d%02d %02d:%02d:%02d";
@@ -164,6 +165,8 @@ void alFFS_savelist()
     f.close();
     alFFS_readlist();
   }
+  postMsgId++;
+  Serial.printf("postMsgId:%d\n",postMsgId);
 }
 
 
@@ -171,59 +174,79 @@ void alFFS_savelist()
 //读lose文件(HEX)
 void alFFS_readlose()
 {
-  int read_count = 0;
-  int tm = 0;
 
-  //打开文件
-  File f = SPIFFS.open("/test.txt", "r");
-  //输出长度
-  read_count = f.size();
-  Serial.printf("lose file size:%d\n", read_count);
-  tm = read_count / 8;
-  Serial.printf("lose file num:%d\n", tm);
-  if (tm == lose_count)
+  Serial.println("Reading file: lose.hex");
+  File file = SPIFFS.open("/lose.hex", "r");
+  if (!file || file.isDirectory())
   {
-    char aa[read_count + 1];
-    f.readBytes(aa, read_count + 1); //读取数据
-    //Serial.println(aa);
-
-    char bb[8];
-    int temp;
-    int hum;
-    uint32_t tim;
-
-    int i = tm;
-    for (int i = 0; i < tm; i++)
-    {
-      Serial.printf("di%dtiao data\n", i);
-      bb[0] = aa[i * 8 + 0];
-      bb[1] = aa[i * 8 + 1];
-      bb[2] = aa[i * 8 + 2];
-      bb[3] = aa[i * 8 + 3];
-      bb[4] = aa[i * 8 + 4];
-      bb[5] = aa[i * 8 + 5];
-      bb[6] = aa[i * 8 + 6];
-      bb[7] = aa[i * 8 + 7];
-
-      //将所有内容输出
-
-      temp = (bb[0] << 8) + bb[1];
-      Serial.printf("temp:%f\n", (float)temp / 100);
-
-      hum = (bb[2] << 8) + bb[3];
-      Serial.printf("hum:%f\n", (float)hum / 100);
-
-      tim = (bb[4] << 24) + (bb[5] << 16) + (bb[6] << 8) + bb[7];
-      Serial.printf("time:%d\n", tim);
-      f.close();
-    }
-  }
-  else
-  {
-    f.close();
-    Serial.println("alFFS_readlose error!");
+    Serial.println("- failed to open file for reading");
     return;
   }
+  Serial.printf("lose size:%d\n",file.size()); 
+  while(file.available())
+  {
+    Serial.print(file.read());
+  }
+  Serial.println();
+  Serial.printf("/*****************************READ LOES END***********************************/\n");
+        
+
+
+
+
+  // int read_count = 0;
+  // int tm = 0;
+
+  // //打开文件
+  // File f = SPIFFS.open("/lose.hex", "r");
+  // //输出长度
+  // read_count = f.size();
+  // Serial.printf("lose file size:%d\n", read_count);
+  // tm = read_count / 8;
+  // Serial.printf("lose file num:%d\n", tm);
+  // if (tm == lose_count)
+  // {
+  //   char aa[read_count + 1];
+  //   f.readBytes(aa, read_count + 1); //读取数据
+  //   //Serial.println(aa);
+
+  //   char bb[8];
+  //   int temp;
+  //   int hum;
+  //   uint32_t tim;
+
+  //   int i = tm;
+  //   for (int i = 0; i < tm; i++)
+  //   {
+  //     Serial.printf("di%dtiao data\n", i);
+  //     bb[0] = aa[i * 8 + 0];
+  //     bb[1] = aa[i * 8 + 1];
+  //     bb[2] = aa[i * 8 + 2];
+  //     bb[3] = aa[i * 8 + 3];
+  //     bb[4] = aa[i * 8 + 4];
+  //     bb[5] = aa[i * 8 + 5];
+  //     bb[6] = aa[i * 8 + 6];
+  //     bb[7] = aa[i * 8 + 7];
+
+  //     //将所有内容输出
+
+  //     temp = (bb[0] << 8) + bb[1];
+  //     Serial.printf("temp:%f\n", (float)temp / 100);
+
+  //     hum = (bb[2] << 8) + bb[3];
+  //     Serial.printf("hum:%f\n", (float)hum / 100);
+
+  //     tim = (bb[4] << 24) + (bb[5] << 16) + (bb[6] << 8) + bb[7];
+  //     Serial.printf("time:%d\n", tim);
+  //     f.close();
+  //   }
+  // }
+  // else
+  // {
+  //   f.close();
+  //   Serial.println("alFFS_readlose error!");
+  //   return;
+  // }
 }
 
 //KB :保存到LOSE文件(HEX)
@@ -233,7 +256,7 @@ void alFFS_savelose()
   File f;
   uint8_t a[4];          //写入缓存
   sht20getTempAndHumi(); //读取温湿度，
-
+  Serial.printf("start save lose ...\n");
   int temp = (int)(currentTemp * 100); //温度值
   int hum = (int)(currentHumi * 100);  //湿度
   uint32_t uinxt = unixtime();
@@ -241,21 +264,38 @@ void alFFS_savelose()
   if (lose_first_flag)
   {
     Serial.println("lose is first rec");
-    f = SPIFFS.open("/test.txt", "w");
+    f = SPIFFS.open("/lose.hex", "w");
+    if (!f|| f.isDirectory())
+    {
+    Serial.println("- failed to open file for reading");
+    return;
+    }
+    lose_first_flag = 0;
   }
   else
   {
     // Serial.println("lose not the first rec");
-    f = SPIFFS.open("/test.txt", "a");
+    f = SPIFFS.open("/lose.hex", "a");
+    if (!f|| f.isDirectory())
+    {
+    Serial.println("- failed to open file for reading");
+    return;
+    }
   }
 
-  lose_first_flag = 0;
+  
   a[0] = temp >> 8;
   a[1] = temp;
   f.write(a, 2);
   f.close();
   //添加湿度
-  f = SPIFFS.open("/test.txt", "a");
+  f = SPIFFS.open("/lose.hex", "a");
+  if (!f|| f.isDirectory())
+    {
+    Serial.println("- failed to open file for reading");
+    return;
+    }
+
   a[0] = hum >> 8;
   a[1] = hum;
   f.write(a, 2);
@@ -268,9 +308,10 @@ void alFFS_savelose()
   f.write(a, 4);
   //写入条数加1
   lose_count++;
+  Serial.printf("lose_count:%d\n",lose_count);
   f.close();
   //完成
-  //alFFS_readlose();
+  alFFS_readlose();
 }
 
 //写文件 用法： writeFile(SPIFFS, "/hello.txt", "Hello ");
@@ -468,7 +509,17 @@ void get_data(fs::FS &fs, const char *path, uint32_t x,float* a,float *b, uint32
   //关闭文件
   file.close();
 }
-
+//xieyi 解析某个lose指令 （int）
+void get_lose_data(int x)
+{
+  float a,b;
+  uint32_t c;
+  get_data(SPIFFS, "/lose.hex", x,&a,&b, &c);
+  Serial.println(a);
+  Serial.println(b);
+  Serial.println(c);
+ 
+}
 
 
 //lose 0~1024 填充数据测试用 debug : 0b
@@ -497,7 +548,7 @@ void lose_tiancong()
   {
     if (lose_first_flag)
     {
-      Serial.println("lose is first rec");
+      Serial.println("lose is first rec2222222");
       writeFile_test(SPIFFS, "/lose.hex", a);
       lose_first_flag = 0;
     }
@@ -519,37 +570,107 @@ void lose_tiancong()
   file.close();
 }
 
-
-
-
-
-
-
-
-//测试 dbug:06
-void test(int x)
+//读lose
+void read_lose()
 {
-  lose_count=0;
- alFFS_savelose();
- alFFS_readlose();
- Serial.printf("lose_count:%d\n",lose_count);
+   alFFS_readlose();
+   Serial.printf("lose_count:%d\n",lose_count);
 }
 
-void test2(int x)
+
+
+char work_dat[8];
+
+//这个函数是舍弃512缓存的解析程序，不存在512内存缓存，只有8字节的解析内存，也就是输入一条指令条数返回条数的数据。
+//用法：get_ffs_lose_data(SPIFFS, "/lose.hex", x,&a,&b,&c);
+void get_ffs_lose_data(fs::FS &fs, const char *path, uint32_t x,float* a,float *b, uint32_t *c)
+{
+   //1.创建变量
+  uint32_t i;
+  int32_t addh=x*8-8;//首地址
+  Serial.printf("addh :%d\n", addh);
+  uint32_t work_size = 0; //工作字节长度
+  uint32_t lose_size = 0; //漏发文件字节长度
+  if(addh<0)
+  {
+     Serial.printf("addh cmd error:%d\n", addh);
+     return;
+  }
+     
+ 
+  //2.清解码缓存器
+  for (int i = 0; i < 8; i++) work_dat[i] = 0;
+
+  //3.输入文件名打开文件，读文件
+  Serial.printf("Reading file: %s\r\n", path);
+  File file = fs.open(path, "r");
+  if (!file || file.isDirectory())
+  {
+    Serial.println("- failed to open file for reading");
+    return;
+  }
+
+  //4.计算参数
+  lose_size = file.size(); //文件长度 
+  Serial.printf("lose_size:%d\n", lose_size);
+  work_size = (x * 8); //需要解码的指令地址
+  Serial.printf("work_size:%d\n", work_size);
+
+  //5.开始解码
+  if (lose_size >= work_size) //指令条数正确 x=64
+  {
+     if(addh<0) addh=0;
+     Serial.printf("addh:%d\n", addh);
+      
+     for (i = 0; i <addh; i++)
+        {
+          if (file.available())file.read();
+          else Serial.printf("fdnhnghgg error:%d\n", i);
+        }
+        //读取指令所在页的有用数据
+        for (i = 0; i < 8; i++)
+        {
+          if (file.available()) work_dat[i] = file.read();
+          else Serial.printf("ersght error:%d\n", i);
+        }
+            //显示work_data
+        for (i = 0; i < 8; i++) Serial.printf("dat[%d]:%d\n", i, work_dat[i]);
+        //提取解码数据
+        *a = ((work_dat[0] << 8) + work_dat[1]) / 100.0;
+        *b = ((work_dat[2] << 8) + work_dat[3]) / 100.0;
+        *c = (work_dat[4] << 24) + (work_dat[5] << 16) + (work_dat[6] << 8) + work_dat[7];
+        Serial.println(*a);
+        Serial.println(*b);
+        Serial.println(*c);
+  }
+  else//这里数据读完了，已经可以将LOSE文件删除了
+  {
+    Serial.printf("NUM_COUNT ERROR! not lose_wenjian\n");
+  }
+  //关闭文件
+  file.close();
+
+}
+
+
+
+void test(int x)
 {
   float a,b;
   uint32_t c;
-  get_data(SPIFFS, "/lose.hex", x,&a,&b, &c);
-  Serial.println(a);
-  Serial.println(b);
-  Serial.println(c);
+  get_ffs_lose_data(SPIFFS, "/lose.hex", x,&a,&b,&c);
+
  
 }
 
-
-
-
-
+void deleteFile(fs::FS &fs, const char * path){
+    Serial.printf("Deleting file: %s\r\n", path);
+    if(fs.remove(path)){
+        Serial.println("- file deleted");
+    } else {
+        Serial.println("- delete failed");
+    }
+}
 
 
 
