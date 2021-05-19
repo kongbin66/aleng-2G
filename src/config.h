@@ -5,6 +5,7 @@ uint8_t dbug =0;//调试开关
 
 /***************************头文件******************************************/
 #include "Arduino.h"
+#include "WiFi.h"
 #include <esp_sleep.h>
 #include "SPIFFS.h"
 #include "Wire.h"
@@ -171,12 +172,12 @@ time_t show_tip_screen_last;           //提示界面自动返回的时间
 time_t show_BLE_screen_last;           //蓝牙界面自动返回的时间
 time_t show_rec_stop_screen_last;      //停止测量界面自动返回的时间
 time_t last_rec_stamp;                 //上次休眠时间
-time_t now_rec_stamp;                  //计算现在记录时间
+
 
 
 
 /*******************************设备码***********************************/
-#if 1
+#if 0
 const char *mqtt_server = "218.201.45.7"; //onenet 的 IP地址
 const int port = 1883;                     //端口号
 #define mqtt_devid "al_kh00001_zx_0001"         //设备ID
@@ -194,15 +195,29 @@ const int port = 1883;                     //端口号
 #define mqtt_password "version=2018-10-31&res=products%2F4LwKzUwOpX%2Fdevices%2Fal_kh00001_zx_0002&et=4092599349&method=md5&sign=FxSayE%2BpBzK9L1YgXt8rxA%3D%3D"
 #endif
 
-#if 0
-const char *mqtt_server = "218.201.45.7"; //onenet 的 IP地址
+#if 1
+const char *mqtt_server ="218.201.45.7";// "183.230.102.116"; //onenet 的 IP地址
 const int port = 1883;                     //端口号
 #define mqtt_devid "al_kh00001_zx_0003"         //设备ID
 #define mqtt_pubid "4LwKzUwOpX"                //产品ID
 //鉴权信息
 #define mqtt_password "version=2018-10-31&res=products%2F4LwKzUwOpX%2Fdevices%2Fal_kh00001_zx_0003&et=4092599349&method=md5&sign=RJjI9dBTNLUXL9rk9zbBtQ%3D%3D"
 #endif
+/*-------------------------------云平台相关定义-------------------------------------*/
+//设备上传数据的post主题
+#define ONENET_TOPIC_PROP_POST "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/post"
+//接收下发属性设置主题
+#define ONENET_TOPIC_PROP_SET "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/set"
+//接收下发属性设置成功的回复主题
+#define ONENET_TOPIC_PROP_SET_REPLY "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/set_reply"
 
+//接收设备属性获取命令主题
+#define ONENET_TOPIC_PROP_GET "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/get"
+//接收设备属性获取命令成功的回复主题
+#define ONENET_TOPIC_PROP_GET_REPLY "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/get_reply"
+
+//这是post上传数据使用的模板
+#define ONENET_POST_BODY_FORMAT "{\"id\":\"1\",\"params\":%s}"
 /*-------------------------------公共变量,参数定义-------------------------------------*/
 //温湿度采集相关
 float currentTemp;
@@ -235,6 +250,7 @@ RTC_DATA_ATTR time_t sleep_end_time;                 //休眠结束时间
 RTC_DATA_ATTR time_t sleep_time_count;               //休眠时长时间
 RTC_DATA_ATTR int postMsgId = 0;                     //记录已经post了多少条
 RTC_DATA_ATTR float locationE, locationN, locationA; //地理位置,经度纬度
+RTC_DATA_ATTR float locationE_, locationN_, locationA_; //地理位置,经度纬度
 RTC_DATA_ATTR int timeNow_Y, timeNow_M, timeNow_D, timeNow_h, timeNow_m, timeNow_s;
 RTC_DATA_ATTR int timeLastNTP_Y, timeLastNTP_M, timeLastNTP_D, timeLastNTP_h, timeLastNTP_m, timeLastNTP_s;
 
@@ -256,6 +272,8 @@ void deleteFile(fs::FS &fs, const char * path);
 
 /*-------------------------------系统时间定义-------------------------------------*/
 RTC_DATA_ATTR uint32_t now_unixtime;//现在系统时间
+RTC_DATA_ATTR uint32_t start_time;//起始记录时间
+RTC_DATA_ATTR uint32_t last_time;//最后记录时间
 
 time_t time_last_async_stamp;//上一次的时间戳
 
@@ -283,28 +301,15 @@ bool getLBSLocation();
 // void ali_sendTemp_Humi_LBS();
 /*-------------------------------onenet_mqtts服务相关onenet_mqtts.ino---------------------*/
 
-/*-------------------------------云平台相关定义-------------------------------------*/
-//设备上传数据的post主题
-#define ONENET_TOPIC_PROP_POST "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/post"
-//接收下发属性设置主题
-#define ONENET_TOPIC_PROP_SET "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/set"
-//接收下发属性设置成功的回复主题
-#define ONENET_TOPIC_PROP_SET_REPLY "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/set_reply"
 
-//接收设备属性获取命令主题
-#define ONENET_TOPIC_PROP_GET "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/get"
-//接收设备属性获取命令成功的回复主题
-#define ONENET_TOPIC_PROP_GET_REPLY "$sys/" mqtt_pubid "/" mqtt_devid "/thing/property/get_reply"
-
-//这是post上传数据使用的模板
-#define ONENET_POST_BODY_FORMAT "{\"id\":\"1\",\"params\":%s}"
 
 
 
 
 void onenet_connect();
-void sendTempAndHumi();
-
+//void sendTempAndHumi();
+bool f_locat=0;//位置获取到标志，未获取到，不刷新位置寄存器
+bool f_time=0;//时间获取到标志，未获取到，不设置ds1302.
 /*-------------------------------休眠服务相关al_sleep.ino---------------------*/
 void go_sleep_a_while_with_ext0();//进入休眠
 
@@ -353,10 +358,10 @@ bool firstBootFlag; //第一次启动标志位
 bool list_first_flag=0;//记录文件第一次标志
 
 bool f_Flight_Mode=0;//飞行模式
-bool f_lose=0; 
+bool f_lose=0;  //有漏发标志
 bool old_workingstate = 0;
 
 
-String losestr1;
+
 uint32_t f_send_ok=1;//漏发上传成功条数
 #endif // CONFIG_H

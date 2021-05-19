@@ -30,9 +30,9 @@
  * 47                       4                   screen_Off_to_sleep_span               息屏到休眠时间
  * ************************************************************/
 void get_eeprom_firstBootFlag()
-{
-  Serial.printf("EEPROM 1: %d \r\n", EEPROM.read(1));
-  firstBootFlag = EEPROM.read(1) == 1 ? false : true;
+{ 
+  firstBootFlag =(EEPROM.read(1) == 1 ? false : true);
+  Serial.printf("EEPROM 1: %d \r\n", firstBootFlag);
 }
 
 void eeprom_config_init()

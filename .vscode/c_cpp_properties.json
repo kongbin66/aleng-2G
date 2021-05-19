@@ -10,6 +10,7 @@
             "includePath": [
                 "c:/Users/Administrator/Desktop/test/test_spiffs/include",
                 "c:/Users/Administrator/Desktop/test/test_spiffs/src",
+                "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/EEPROM/src",
@@ -105,7 +106,6 @@
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 "C:/Users/Administrator/.platformio/packages/tool-unity",
@@ -116,6 +116,7 @@
                 "path": [
                     "c:/Users/Administrator/Desktop/test/test_spiffs/include",
                     "c:/Users/Administrator/Desktop/test/test_spiffs/src",
+                    "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/EEPROM/src",
@@ -211,7 +212,6 @@
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                    "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/Administrator/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                     "C:/Users/Administrator/.platformio/packages/tool-unity",

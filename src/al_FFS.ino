@@ -122,12 +122,20 @@ void alFFS_readlist()
 //josn保存到LIST文件，判断第一次写标志
 void alFFS_savelist()
 {
-  Serial.printf("start save list ...\n");
+  Serial.printf("start save list ... list_first_flag=%d\n",list_first_flag);
   //1.读取温湿度，和当前时间。
   char tempStr[18];
   char tempStrtemplate[] = "%d%02d%02d %02d:%02d:%02d";
   snprintf(tempStr, sizeof(tempStr), tempStrtemplate, (now1.year + 2000), now1.month, now1.day, now1.hour, now1.minute, now1.second);
+  if((f_locat==1)&&(locationE!=locationE_))
+  {
+    locationN=locationN_;
+    locationE=locationE_;
+    locationA=locationA_; 
+    Serial.printf("Temp=%f,Humi=%f,Time=%d,locationE=%f,locationN=%f.\n", currentTemp, currentHumi, now_unixtime, locationE, locationN);
+  }
   sht20getTempAndHumi();
+
   //2.写入到list文件
   if (list_first_flag) //第一次发送写
   {
@@ -137,7 +145,7 @@ void alFFS_savelist()
     File f = SPIFFS.open("/list.json", FILE_WRITE);
     String strtemp = "{\"st\":\"" + (String)tempStr +
                      "\",\"data\": [{\"tm\":\"" + (String)tempStr +
-                     "\",\"tmsp\":" + (String)(unixtime()) +
+                     "\",\"tmsp\":" + (String)(now_unixtime) +
                      ",\"tp\":" + (String)currentTemp +
                      ",\"h\":" + (String)currentHumi +
                      ",\"E\":" + (String)locationE +
@@ -155,7 +163,7 @@ void alFFS_savelist()
     Serial.println("list not the first rec!");
     File f = SPIFFS.open("/list.json", FILE_APPEND);
     String strtemp = ",{\"tm\":\"" + (String)tempStr +
-                     "\",\"tmsp\":" + (String)(unixtime()) +
+                     "\",\"tmsp\":" + (String)(now_unixtime) +
                      ",\"tp\":" + (String)currentTemp +
                      ",\"h\":" + (String)currentHumi +
                      ",\"E\":" + (String)locationE +
@@ -174,7 +182,6 @@ void alFFS_savelist()
 //读lose文件(HEX)
 void alFFS_readlose()
 {
-
   Serial.println("Reading file: lose.hex");
   File file = SPIFFS.open("/lose.hex", "r");
   if (!file || file.isDirectory())
@@ -255,11 +262,19 @@ void alFFS_savelose()
   //存储以字节方式存储和读取
   File f;
   uint8_t a[4];          //写入缓存
+  //确定数据
   sht20getTempAndHumi(); //读取温湿度，
-  Serial.printf("start save lose ...\n");
+  if((f_locat==1)&&(locationE!=locationE_))
+  {
+    locationN=locationN_;
+    locationE=locationE_;
+    locationA=locationA_; 
+    Serial.printf("Temp=%f,Humi=%f,Time=%d,locationE=%f,locationN=%f.\n", currentTemp, currentHumi, now_unixtime, locationE, locationN);
+  }
+  Serial.printf("start save lose ...lose_first_flag = %d\n",lose_first_flag);
   int temp = (int)(currentTemp * 100); //温度值
   int hum = (int)(currentHumi * 100);  //湿度
-  uint32_t uinxt = unixtime();
+  uint32_t uinxt = now_unixtime;
 
   if (lose_first_flag)
   {
@@ -573,8 +588,9 @@ void lose_tiancong()
 //读lose
 void read_lose()
 {
+   Serial.printf("f_lose=%d;lose_count = %d;\n",f_lose,lose_count);
    alFFS_readlose();
-   Serial.printf("lose_count:%d\n",lose_count);
+   
 }
 
 

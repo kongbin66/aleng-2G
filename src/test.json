@@ -1,15 +1,22 @@
 {
-  "data": 
-  [
-    {
-      "temp": 21.59,
-      "humi": 27.76,
-      "time": 1619635253
-    },
-    {
-      "temp": 21.58,
-      "humi": 27.60,
-      "time": 1619635286
-    }
-  ]
+  "temp": {
+    "value":%.2f,
+    "time":%u000
+  },
+  "humi": {
+    "value":%.2f,
+    "time":%u000
+  },
+  "le": {
+    "value":%.2f,
+    "time":%u000
+  },
+  "ln": {
+    "value":%.2f,
+    "time":%u000
+  },
+  "start_time": {
+    "value":%u000,
+    "time":%u000
+  }
 }

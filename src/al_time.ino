@@ -3,7 +3,7 @@
 //开机更新
 void wakeup_init_time()
 {
-  sleep_end_time = unixtime() ;
+  sleep_end_time = now_unixtime ;
   sleep_time_count = sleep_end_time - last_rec_stamp;
   Serial.printf("sleep count: %ld ,end_time:%ld,last_rec_stamp:%ld\r\n", sleep_time_count ,sleep_end_time,last_rec_stamp);
   //判断唤醒源
@@ -16,8 +16,8 @@ void wakeup_init_time()
 
 
 
-#define SECONDS_FROM_1970_TO_2000                                              \
-  946684800 
+#define SECONDS_FROM_1970_TO_2000 \
+946656000
 #define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
 const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30,
                                        31, 31, 30, 31, 30};
@@ -34,9 +34,9 @@ static uint16_t date2days(uint16_t y, uint8_t m, uint8_t d) {
 static uint32_t time2ulong(uint16_t days, uint8_t h, uint8_t m, uint8_t s) {
   return ((days * 24UL + h) * 60 + m) * 60 + s;
 }
+
 uint32_t unixtime() 
 {
-
   uint32_t t;
   uint16_t days = date2days(now1.year, now1.month, now1.day);
   t = time2ulong(days, now1.hour, now1.minute, now1.second);
@@ -44,3 +44,4 @@ uint32_t unixtime()
   //Serial.println("32wweishijian:"+(String)t);
   return t;
 }
+

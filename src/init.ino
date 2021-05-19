@@ -30,7 +30,7 @@ void hardware_init()
   //初始化DS1302引脚
   ds_rtc.init();
   i=ds_rtc.isHalted();//检查运行DS1302
- if(i) ds_rtc.setDateTime(&now1);
+  if(i) ds_rtc.setDateTime(&now1);//数值不对，只是让它运行
 
  
   //唤醒方式
@@ -74,10 +74,19 @@ void software_init()//軟件初始化
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_UNDEFINED) //如果是系统复位唤醒的, 则停止工作, 亮屏
   {
     workingState = NOT_WORKING;
+    Serial.println("workingState = NOT_WORKING;2");
+
     oledState = OLED_ON;
-    list_first_flag=1;
-    lose_first_flag=1;
-    firstBootFlag=1; //第一次启动标志位
+    list_first_flag=true;
+    lose_first_flag=true;
+    postMsgId = 0; //清记录条数
+    lose_count=0;
+    deleteFile(SPIFFS, "/list.json");
+    deleteFile(SPIFFS, "/lose.hex");
+    ds_rtc.getDateTime(&now1); 
+    Serial.printf("time now1: %d-%d-%d %d:%d:%d\r\n", now1.year, now1.month, now1.day,now1.hour, now1.minute, now1.second);
+    last_rec_stamp = now_unixtime;//刷新最后发送时间
+    eeprom_config_save_parameter();
   } 
   keyState = NOKEYDOWN;
   screenState = MAIN_TEMP_SCREEN;

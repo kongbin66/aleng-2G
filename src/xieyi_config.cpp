@@ -16,8 +16,10 @@ void sys_time();
 void lose_tiancong();
 void my_listDir(bool x);
 void get_lose_data(int);
+void SET_ds1302(int year, char momtch, char day, char hour, char minute, char second);
 
 void test(int);
+
 //2.填写指令参数格式
   NAME_TAB name_tab[]=
  {
@@ -36,7 +38,9 @@ void test(int);
 	  (void*)lose_tiancong,                                   {0xaa,0x0b, 0, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)my_listDir,                                      {0xaa,0x0c, 1, 0, 0, 0, 0, 0,0,0, 0xbb},
 	  (void*)get_lose_data,                                   {0xaa,0x0d, 1, 1, 0, 0, 0, 0,0,0, 0xbb},
+	  (void*)SET_ds1302,                                      {0xaa,0x0e, 1, 1, 2, 3, 4, 5,6,0, 0xbb},
 	  (void*)test,                                            {0xaa,0xff, 1, 1, 0, 0, 0, 0,0,0, 0xbb},
+	 
  };
 //3.根据函数表修改xieyi.h的tab
 //4.在主程序中调用xieyi_scan();

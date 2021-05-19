@@ -1,0 +1,18 @@
+{
+  "temp": {
+    "value":%.2f,
+    "time":%u000
+  },
+  "humi": {
+    "value":%.2f,
+    "time":%u000
+  },
+  "start_time": {
+    "value":%u,
+    "time":%u000
+  },
+  "last_time": {
+    "value":%u,
+    "time":%u000
+  }
+}

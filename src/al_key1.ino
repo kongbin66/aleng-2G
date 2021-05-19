@@ -124,7 +124,6 @@ void key_loop()
         workingState = WORKING;
         current_rec_State = START_RECING;
         alFFS_thisRec_firstData_flag = true;
-        now_rec_stamp = unixtime();
         Serial.println("workingState = WORKING;");
         keyState = NOKEYDOWN;
       }
@@ -135,7 +134,7 @@ void key_loop()
         workingState = NOT_WORKING;
         current_rec_State = END_RECING;
         //alFFS_endRec();
-        Serial.println("workingState = NOT_WORKING;");
+        Serial.println("workingState = NOT_WORKING;1");
         keyScreen_Start = sys_sec;
         keyScreen_Now = sys_sec;
         keyState = NOKEYDOWN;
